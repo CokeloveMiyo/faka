@@ -1,0 +1,18 @@
+# 运行数据与隐私
+*.db
+*.db-shm
+*.db-wal
+data/rl_*.json
+data/php-error.log
+.env
+
+# 日志
+*.log
+
+# 截图与测试产物
+.shots/
+.taste-skill/
+
+# 系统杂项
+Thumbs.db
+.DS_Store

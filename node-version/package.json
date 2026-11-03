@@ -1,0 +1,17 @@
+{
+  "name": "miaofa-faka",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "秒发卡铺 —— 卡密自动发货商店，对接 V免签 个人收款",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  }
+}

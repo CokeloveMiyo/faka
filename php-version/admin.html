@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理后台 · 秒发卡铺</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+  <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+
+<!-- 登录 -->
+<div class="login" id="login">
+  <header class="login__top">
+    <span class="login__mark" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="50" height="50">
+  
+  <defs>
+    <linearGradient id="lgL-g" x1="6" y1="8" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4a90ff"/>
+      <stop offset=".55" stop-color="#1f6bff"/>
+      <stop offset="1" stop-color="#0f3fc4"/>
+    </linearGradient>
+
+    <!-- 票券外形：圆角矩形 + 左右各一个半圆撕口 -->
+    <mask id="lgL-t2">
+      <rect x="4" y="9.5" width="40" height="29" rx="8" fill="#fff"/>
+      <circle cx="4" cy="24" r="3.2" fill="#000"/>
+      <circle cx="44" cy="24" r="3.2" fill="#000"/>
+    </mask>
+    <clipPath id="lgL-c">
+      <rect x="4" y="9.5" width="40" height="29" rx="8"/>
+    </clipPath>
+
+    <style>
+      .lgL-shine { animation: lgLSweep 5.6s cubic-bezier(.4,0,.3,1) infinite; }
+      .lgL-bolt  { transform-box: fill-box; transform-origin: center;
+                  animation: lgLBolt 4.4s cubic-bezier(.4,0,.2,1) infinite; }
+      .lgL-perf  { stroke-dasharray: 1.8 3; animation: lgLMarch 1.8s linear infinite; }
+      .lgL-spark { animation: lgLSpark 2.6s cubic-bezier(.45,0,.55,1) infinite; }
+
+      @keyframes lgLSweep {
+        0%, 42%   { transform: translateX(0); }
+        80%, 100% { transform: translateX(70px); }
+      }
+      @keyframes lgLBolt {
+        0%, 58%, 100% { opacity: 1; transform: scale(1); }
+        64%           { opacity: .45; transform: scale(.92); }
+        71%           { opacity: 1; transform: scale(1.06); }
+        78%           { transform: scale(1); }
+      }
+      @keyframes lgLMarch { to { stroke-dashoffset: -9.6; } }
+      @keyframes lgLSpark {
+        0%, 48%  { opacity: 0; transform: translateY(0); }
+        56%      { opacity: .95; }
+        88%      { opacity: .95; }
+        100%     { opacity: 0; transform: translateY(17px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .lgL-shine, .lgL-bolt, .lgL-perf, .lgL-spark { animation: none; }
+        .lgL-spark { opacity: 0; }
+      }
+    </style>
+  </defs>
+
+  <g mask="url(#lgL-t2)">
+    <rect x="4" y="9.5" width="40" height="29" fill="url(#lgL-g)"/>
+
+    <!-- 斜向光带扫过（出票时的一道反光） -->
+    <g transform="rotate(18 24 24)" clip-path="url(#lgL-c)">
+      <g class="lgL-shine"><rect x="-10" y="-6" width="7.5" height="60" fill="#fff" opacity=".4"/></g>
+    </g>
+
+    <!-- 齿孔虚线：向下流动，像凭据正在被打印出来 -->
+    <line class="lgL-perf" x1="33.5" y1="13" x2="33.5" y2="35"
+          stroke="#fff" stroke-opacity=".85" stroke-width="1.7" stroke-linecap="round"/>
+
+    <!-- 一枚光点沿齿孔滑出（卡密出库） -->
+    <circle class="lgL-spark" cx="33.5" cy="13.2" r="1.5" fill="#fff" opacity="0"/>
+
+    <!-- 闪电：秒发 -->
+    <path class="lgL-bolt" d="M20.6 12.4 L12.2 24.9 H18.1 L15.6 31.6 L25.2 18.9 H19.4 Z"
+          fill="#fff" stroke="#fff" stroke-width=".9" stroke-linejoin="round"/>
+  </g>
+</svg>
+
+    </span>
+    <h1>秒发卡铺 · 管理后台</h1>
+  </header>
+  <form class="login__card" id="login-form">
+    <p class="login__sub">输入管理员密码进入</p>
+    <label for="login-pass">管理员密码</label>
+    <input id="login-pass" type="password" autocomplete="current-password" required>
+    <button class="btn-primary" type="submit">进入后台</button>
+    <p class="login__err" id="login-err" aria-live="polite"></p>
+  </form>
+  <p class="login__pagefoot">收款自动确认，发货自动完成。</p>
+</div>
+
+<!-- 应用壳：侧边栏 + 画布 -->
+<div class="shell" id="shell" hidden>
+  <nav class="rail" aria-label="后台导航">
+    <a class="rail__logo" href="/" title="回到店首">
+      <span class="rail__logo-mark" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="40" height="40">
+  
+  <defs>
+    <linearGradient id="lgR-g" x1="6" y1="8" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4a90ff"/>
+      <stop offset=".55" stop-color="#1f6bff"/>
+      <stop offset="1" stop-color="#0f3fc4"/>
+    </linearGradient>
+
+    <!-- 票券外形：圆角矩形 + 左右各一个半圆撕口 -->
+    <mask id="lgR-t2">
+      <rect x="4" y="9.5" width="40" height="29" rx="8" fill="#fff"/>
+      <circle cx="4" cy="24" r="3.2" fill="#000"/>
+      <circle cx="44" cy="24" r="3.2" fill="#000"/>
+    </mask>
+    <clipPath id="lgR-c">
+      <rect x="4" y="9.5" width="40" height="29" rx="8"/>
+    </clipPath>
+
+    <style>
+      .lgR-shine { animation: lgRSweep 5.6s cubic-bezier(.4,0,.3,1) infinite; }
+      .lgR-bolt  { transform-box: fill-box; transform-origin: center;
+                  animation: lgRBolt 4.4s cubic-bezier(.4,0,.2,1) infinite; }
+      .lgR-perf  { stroke-dasharray: 1.8 3; animation: lgRMarch 1.8s linear infinite; }
+      .lgR-spark { animation: lgRSpark 2.6s cubic-bezier(.45,0,.55,1) infinite; }
+
+      @keyframes lgRSweep {
+        0%, 42%   { transform: translateX(0); }
+        80%, 100% { transform: translateX(70px); }
+      }
+      @keyframes lgRBolt {
+        0%, 58%, 100% { opacity: 1; transform: scale(1); }
+        64%           { opacity: .45; transform: scale(.92); }
+        71%           { opacity: 1; transform: scale(1.06); }
+        78%           { transform: scale(1); }
+      }
+      @keyframes lgRMarch { to { stroke-dashoffset: -9.6; } }
+      @keyframes lgRSpark {
+        0%, 48%  { opacity: 0; transform: translateY(0); }
+        56%      { opacity: .95; }
+        88%      { opacity: .95; }
+        100%     { opacity: 0; transform: translateY(17px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .lgR-shine, .lgR-bolt, .lgR-perf, .lgR-spark { animation: none; }
+        .lgR-spark { opacity: 0; }
+      }
+    </style>
+  </defs>
+
+  <g mask="url(#lgR-t2)">
+    <rect x="4" y="9.5" width="40" height="29" fill="url(#lgR-g)"/>
+
+    <!-- 斜向光带扫过（出票时的一道反光） -->
+    <g transform="rotate(18 24 24)" clip-path="url(#lgR-c)">
+      <g class="lgR-shine"><rect x="-10" y="-6" width="7.5" height="60" fill="#fff" opacity=".4"/></g>
+    </g>
+
+    <!-- 齿孔虚线：向下流动，像凭据正在被打印出来 -->
+    <line class="lgR-perf" x1="33.5" y1="13" x2="33.5" y2="35"
+          stroke="#fff" stroke-opacity=".85" stroke-width="1.7" stroke-linecap="round"/>
+
+    <!-- 一枚光点沿齿孔滑出（卡密出库） -->
+    <circle class="lgR-spark" cx="33.5" cy="13.2" r="1.5" fill="#fff" opacity="0"/>
+
+    <!-- 闪电：秒发 -->
+    <path class="lgR-bolt" d="M20.6 12.4 L12.2 24.9 H18.1 L15.6 31.6 L25.2 18.9 H19.4 Z"
+          fill="#fff" stroke="#fff" stroke-width=".9" stroke-linejoin="round"/>
+  </g>
+</svg>
+
+      </span>
+      <span class="rail__logo-name">秒发卡铺</span>
+    </a>
+    <button class="rail__btn is-active" data-view="overview">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M1.5 8.5 8 2l6.5 6.5M3.5 7v6.5h9V7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="rail__label">总览</span>
+    </button>
+    <button class="rail__btn" data-view="orders">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3.5 1.5h9v13l-2-1.4-2 1.4-2-1.4-2 1.4zM5.5 5h5M5.5 8h5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="rail__label">订单</span>
+    </button>
+    <button class="rail__btn" data-view="products">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M1.5 8.2V1.5h6.7l6.3 6.3-6.7 6.7zM5 5h.01" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="rail__label">商品与库存</span>
+    </button>
+    <button class="rail__btn rail__btn--end" id="logout">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M10 2.5H3.5v11H10M7 8h7.5M12 5.5 14.5 8 12 10.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="rail__label">退出登录</span>
+    </button>
+  </nav>
+
+  <main class="canvas">
+    <!-- 总览 -->
+    <section class="view" id="view-overview">
+      <div class="title-row">
+        <h2>总览</h2>
+        <p class="title-note" id="ov-date"></p>
+      </div>
+      <div class="card card--chart">
+        <div class="kpis" id="kpis" role="tablist" aria-label="近十四天趋势"></div>
+        <div class="chart" id="chart"></div>
+        <table class="mini-table" id="compare-table" aria-label="与昨天的对比"></table>
+      </div>
+      <div class="pair">
+        <div class="card">
+          <div class="card__head"><h3>库存告急</h3><span class="card__note" id="stock-total"></span></div>
+          <ul class="barlist" id="low-stock"></ul>
+        </div>
+        <div class="card">
+          <div class="card__head"><h3>最近订单</h3><button class="btn-ghost" data-goto="orders">全部订单</button></div>
+          <table class="mini-table" id="recent-orders"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 订单 -->
+    <section class="view" id="view-orders" hidden>
+      <div class="title-row">
+        <h2>订单</h2>
+        <button class="btn-primary" id="orders-refresh" type="button">刷新</button>
+      </div>
+      <div class="tabs" id="order-tabs" role="tablist" aria-label="订单状态">
+        <button role="tab" aria-selected="true" data-status="">全部</button>
+        <button role="tab" aria-selected="false" data-status="pending">待支付</button>
+        <button role="tab" aria-selected="false" data-status="paid">已收款</button>
+        <button role="tab" aria-selected="false" data-status="delivered">已发货</button>
+        <button role="tab" aria-selected="false" data-status="failed">已失效</button>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="order-search" type="search" placeholder="搜订单号 / 商品 / 联系方式" aria-label="搜索订单">
+        <span class="count" id="order-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="orders-table">
+          <thead><tr><th>订单号</th><th>商品</th><th class="num">金额</th><th>状态</th><th>联系方式</th><th>时间</th><th>卡密</th><th>操作</th></tr></thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+      </div>
+      <p class="empty" id="orders-empty" hidden>这一栏暂时没有订单。</p>
+    </section>
+
+    <!-- 商品与库存 -->
+    <section class="view" id="view-products" hidden>
+      <div class="title-row">
+        <h2>商品与库存</h2>
+        <button class="btn-primary" id="product-add-toggle" type="button" aria-expanded="false">新商品</button>
+      </div>
+      <form class="card product-form" id="product-form" hidden>
+        <div class="grid-3">
+          <label>商品名<input name="name" maxlength="60" required></label>
+          <label>一句话说明<input name="description" maxlength="200"></label>
+          <label>价格（元）<input name="price" type="number" min="0.01" max="10000" step="0.01" required></label>
+        </div>
+        <div class="grid-3">
+          <label>分类<input name="category" maxlength="20" list="cat-options" placeholder="如：会员 / 点卡（留空不分类）">
+            <datalist id="cat-options"></datalist>
+          </label>
+        </div>
+        <button class="btn-primary" type="submit">上架</button>
+      </form>
+      <div class="tabs prod-filter" id="cat-filter" role="tablist" aria-label="按分类筛选商品" hidden></div>
+      <div class="card card--chart" id="product-list"></div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="/assets/js/admin.js?v=20261103" defer></script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>订单状态 · 秒发卡铺</title>
+  <meta name="robots" content="noindex">
+  <style>
+    :root {
+      --bg: #f5f6f8; --card: #fff; --ink: #1d1d1f; --muted: #515156; --faint: #6e6e73;
+      --line: #e7e9ee; --line-strong: #d9dce3; --accent: #1f6bff; --accent-soft: #eef3ff;
+      --ok: #12a150; --danger: #de3350;
+      --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: var(--font); color: var(--ink); background: var(--bg);
+      font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+      min-height: 100svh; display: grid; place-items: center; padding: 18px;
+    }
+    .card {
+      width: min(520px, 100%); background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 10px 32px rgba(16,24,40,.07);
+      padding: 28px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .brand__mark { width: 44px; height: 44px; display: grid; place-items: center; flex: none; }
+    .brand__name { font-weight: 700; font-size: 18px; }
+    h1 { font-size: 21px; font-weight: 700; margin: 0 0 4px; letter-spacing: -.01em; }
+    .sub { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; }
+    .help { margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed var(--line); text-align: center; font-size: 13px; }
+    .help a { color: var(--muted); text-decoration: none; }
+    .help a:hover { color: var(--accent); text-decoration: underline; }
+    .ord { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; }
+    .ord__head { padding: 14px 16px; background: var(--bg); display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .ord__name { font-weight: 600; font-size: 14.5px; }
+    .ord__no { font-size: 12px; color: var(--faint); word-break: break-all; }
+    .ord__body { padding: 14px 16px; display: grid; gap: 10px; }
+    .ord__row { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+    .ord__row span:first-child { color: var(--faint); }
+    .pill { font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px; flex: none; }
+    .pill--pending { color: #9a6b00; background: #fdf3d8; }
+    .pill--paid, .pill--delivered { color: var(--ok); background: #eafaf1; }
+    .pill--failed { color: var(--faint); background: var(--line); }
+    .codes { display: grid; gap: 8px; }
+    .code-row {
+      display: flex; align-items: center; gap: 10px; background: var(--bg);
+      border: 1px dashed var(--line-strong); border-radius: 9px; padding: 9px 12px;
+    }
+    .code-row code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13.5px; word-break: break-all; flex: 1; }
+    .code-copy {
+      border: 0; background: var(--accent-soft); color: var(--accent); border-radius: 7px;
+      padding: 5px 12px; font-size: 12.5px; font-weight: 600; flex: none; cursor: pointer;
+    }
+    .hint { margin: 0; font-size: 12.5px; color: var(--faint); }
+    .qrbox { display: grid; justify-items: center; gap: 8px; padding: 14px 0 4px; }
+    .qrbox .qr {
+      width: 220px; height: 220px; padding: 10px; background: #fff;
+      border: 1px solid var(--line); border-radius: 13px;
+    }
+    .qrbox .qr svg, .qrbox .qr img { width: 100%; height: 100%; display: block; }
+    .qrbox .qr-tip { font-size: 12.5px; color: var(--muted); text-align: center; }
+    .actions { display: flex; gap: 10px; margin-top: 4px; }
+    .btn {
+      flex: 1; height: 44px; border: 0; border-radius: 11px; font-weight: 600; font-size: 14px;
+      display: grid; place-items: center; text-decoration: none; cursor: pointer; font-family: var(--font);
+    }
+    .btn--dark { background: #17181c; color: #fff; }
+    .btn--dark:hover { background: #2a2b31; }
+    .btn--blue { background: var(--accent); color: #fff; }
+    .btn--blue:hover { background: #1454d6; }
+    .btn--ghost { background: var(--card); color: var(--muted); border: 1px solid var(--line-strong); }
+    .spin {
+      width: 18px; height: 18px; border: 2.5px solid var(--line-strong); border-top-color: var(--accent);
+      border-radius: 50%; animation: r 0.9s linear infinite; margin: 6px auto;
+    }
+    @keyframes r { to { transform: rotate(360deg); } }
+    .err { text-align: center; color: var(--danger); font-size: 14px; }
+    .toast {
+      position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70;
+      background: #17181c; color: #fff; font-size: 13.5px; padding: 10px 18px; border-radius: 999px;
+    }
+  </style>
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <main class="card">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="44" height="44">
+  
+  <defs>
+    <linearGradient id="lgP-g" x1="6" y1="8" x2="42" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4a90ff"/>
+      <stop offset=".55" stop-color="#1f6bff"/>
+      <stop offset="1" stop-color="#0f3fc4"/>
+    </linearGradient>
+
+    <!-- 票券外形：圆角矩形 + 左右各一个半圆撕口 -->
+    <mask id="lgP-t2">
+      <rect x="4" y="9.5" width="40" height="29" rx="8" fill="#fff"/>
+      <circle cx="4" cy="24" r="3.2" fill="#000"/>
+      <circle cx="44" cy="24" r="3.2" fill="#000"/>
+    </mask>
+    <clipPath id="lgP-c">
+      <rect x="4" y="9.5" width="40" height="29" rx="8"/>
+    </clipPath>
+
+    <style>
+      .lgP-shine { animation: lgPSweep 5.6s cubic-bezier(.4,0,.3,1) infinite; }
+      .lgP-bolt  { transform-box: fill-box; transform-origin: center;
+                  animation: lgPBolt 4.4s cubic-bezier(.4,0,.2,1) infinite; }
+      .lgP-perf  { stroke-dasharray: 1.8 3; animation: lgPMarch 1.8s linear infinite; }
+      .lgP-spark { animation: lgPSpark 2.6s cubic-bezier(.45,0,.55,1) infinite; }
+
+      @keyframes lgPSweep {
+        0%, 42%   { transform: translateX(0); }
+        80%, 100% { transform: translateX(70px); }
+      }
+      @keyframes lgPBolt {
+        0%, 58%, 100% { opacity: 1; transform: scale(1); }
+        64%           { opacity: .45; transform: scale(.92); }
+        71%           { opacity: 1; transform: scale(1.06); }
+        78%           { transform: scale(1); }
+      }
+      @keyframes lgPMarch { to { stroke-dashoffset: -9.6; } }
+      @keyframes lgPSpark {
+        0%, 48%  { opacity: 0; transform: translateY(0); }
+        56%      { opacity: .95; }
+        88%      { opacity: .95; }
+        100%     { opacity: 0; transform: translateY(17px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .lgP-shine, .lgP-bolt, .lgP-perf, .lgP-spark { animation: none; }
+        .lgP-spark { opacity: 0; }
+      }
+    </style>
+  </defs>
+
+  <g mask="url(#lgP-t2)">
+    <rect x="4" y="9.5" width="40" height="29" fill="url(#lgP-g)"/>
+
+    <!-- 斜向光带扫过（出票时的一道反光） -->
+    <g transform="rotate(18 24 24)" clip-path="url(#lgP-c)">
+      <g class="lgP-shine"><rect x="-10" y="-6" width="7.5" height="60" fill="#fff" opacity=".4"/></g>
+    </g>
+
+    <!-- 齿孔虚线：向下流动，像凭据正在被打印出来 -->
+    <line class="lgP-perf" x1="33.5" y1="13" x2="33.5" y2="35"
+          stroke="#fff" stroke-opacity=".85" stroke-width="1.7" stroke-linecap="round"/>
+
+    <!-- 一枚光点沿齿孔滑出（卡密出库） -->
+    <circle class="lgP-spark" cx="33.5" cy="13.2" r="1.5" fill="#fff" opacity="0"/>
+
+    <!-- 闪电：秒发 -->
+    <path class="lgP-bolt" d="M20.6 12.4 L12.2 24.9 H18.1 L15.6 31.6 L25.2 18.9 H19.4 Z"
+          fill="#fff" stroke="#fff" stroke-width=".9" stroke-linejoin="round"/>
+  </g>
+</svg>
+
+      </span>
+      <span class="brand__name">秒发卡铺</span>
+    </div>
+    <h1 id="headline">订单状态</h1>
+    <p class="sub" id="subline">正在获取订单信息…</p>
+    <div id="stage"><div class="spin"></div></div>
+    <p class="help"><a href="https://qm.qq.com/q/N82U82TdCM" target="_blank" rel="noopener noreferrer">遇到问题？联系客服</a></p>
+  </main>
+
+<script src="/assets/js/qrcode.min.js?v=20261103"></script>
+<script>
+(() => {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const money = (n) => Number(n).toFixed(2);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const st = { pending: '待支付', paid: '已收款', delivered: '已发货', failed: '已失效' };
+  const orderId = new URLSearchParams(location.search).get('order') || '';
+  let timer = 0;
+
+  if (!orderId) {
+    $('#headline').textContent = '缺少订单号';
+    $('#subline').textContent = '请从店铺页面重新下单，或在「我的订单」中查询。';
+    $('#stage').innerHTML = '<div class="actions"><a class="btn btn--dark" href="/">回到店铺</a></div>';
+    return;
+  }
+
+  function toast(msg) {
+    let t = $('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.append(t); }
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(t.__timer);
+    t.__timer = setTimeout(() => { t.hidden = true; }, 2200);
+  }
+
+  async function poll() {
+    try {
+      const r = await fetch('api.php?_r=' + encodeURIComponent('order/' + encodeURIComponent(orderId)));
+      const o = await r.json();
+      if (!r.ok) throw new Error(o.error || '查询失败');
+      render(o);
+      if (o.status === 'pending' && !timer) timer = setInterval(poll, 3000);
+      if (o.status !== 'pending' && timer) { clearInterval(timer); timer = 0; }
+    } catch (e) {
+      $('#stage').innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      $('#headline').textContent = '订单状态';
+    }
+  }
+
+  function render(o) {
+    const codes = String(o.code || '').split('\n').filter(Boolean);
+    if (o.status === 'delivered') {
+      $('#headline').textContent = '支付成功，卡密已发货';
+      $('#subline').textContent = '请立即复制保存；凭订单号可随时回来查看。';
+    } else if (o.status === 'pending') {
+      $('#headline').textContent = '等待支付';
+      $('#subline').textContent = '完成付款后本页会自动刷新出卡密。';
+    } else if (o.status === 'paid') {
+      $('#headline').textContent = '款项已确认';
+      $('#subline').textContent = '正在补发货，请稍候刷新页面。';
+    } else if (o.status === 'failed') {
+      $('#headline').textContent = '订单已失效';
+      $('#subline').textContent = '超过 45 分钟未支付。如已付款请联系店主。';
+    } else {
+      $('#headline').textContent = '订单状态';
+    }
+
+    $('#stage').innerHTML = `
+      <div class="ord">
+        <div class="ord__head">
+          <div>
+            <div class="ord__name">${esc(o.product_name)}${o.qty > 1 ? ` × ${o.qty}` : ''}</div>
+            <div class="ord__no">订单号 ${esc(o.order_id)}</div>
+          </div>
+          <span class="pill pill--${o.status}">${st[o.status] || o.status}</span>
+        </div>
+        <div class="ord__body">
+          <div class="ord__row"><span>金额</span><span>¥${money(o.price)}</span></div>
+          ${o.paid_at ? `<div class="ord__row"><span>支付时间</span><span>${esc(o.paid_at)}</span></div>` : ''}
+          ${o.status === 'delivered' ? `
+            <div class="codes">${codes.map((c, i) => `
+              <div class="code-row"><code>${esc(c)}</code>
+                <button class="code-copy" type="button" data-code="${esc(c)}">复制${codes.length > 1 ? ` · ${i + 1}` : ''}</button>
+              </div>`).join('')}</div>`
+          : o.status === 'pending' ? `
+            ${o.pay_url ? `
+            <div class="qrbox">
+              <div class="qr" id="qr"><div class="spin"></div></div>
+              <p class="qr-tip" id="qr-tip"></p>
+            </div>` : ''}
+            <div class="actions">
+              ${o.pay_url ? `<a class="btn btn--blue" href="${esc(o.pay_url)}">尝试打开支付</a>` : ''}
+              <button class="btn btn--ghost" type="button" onclick="location.reload()">刷新状态</button>
+            </div>` : ''}
+        </div>
+      </div>
+      <div class="actions" style="margin-top:16px">
+        <a class="btn ${o.status === 'delivered' ? 'btn--ghost' : 'btn--dark'}" href="/">回到店铺</a>
+      </div>`;
+
+    document.querySelectorAll('.code-copy').forEach((b) => b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.code); toast('已复制到剪贴板'); }
+      catch { toast(b.dataset.code); }
+    }));
+
+    /* 待支付时把 payUrl 渲染成二维码（微信 wxp:// 只能扫码，点不开）。
+       PHP 版：浏览器本地生成，不再请求后端 /api/qr */
+    if (o.status === 'pending' && o.pay_url) {
+      const isWechat = /^wxp:\/\//i.test(o.pay_url);
+      $('#qr-tip').textContent = isWechat
+        ? '请用微信「扫一扫」识别此二维码付款'
+        : '请用支付宝/微信扫码付款，或在手机上点「尝试打开支付」';
+      const box = $('#qr');
+      if (box) {
+        try {
+          const qr = qrcode(0, 'M');
+          qr.addData(o.pay_url);
+          qr.make();
+          box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+        } catch (e) {
+          box.innerHTML = '<p class="qr-tip">二维码生成失败，请点「尝试打开支付」</p>';
+        }
+      }
+    }
+  }
+
+  poll();
+})();
+</script>
+</body>
+</html>

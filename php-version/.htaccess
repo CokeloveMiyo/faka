@@ -1,0 +1,24 @@
+# 秒发卡铺 · PHP 版（共享虚拟主机用）
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # API 路由：/api/xxx -> api.php?_r=xxx
+  RewriteRule ^api/(.*)$ api.php?_r=$1 [QSA,L]
+  # V免签 异步回调
+  RewriteRule ^vmq/notify$ api.php?_r=vmq/notify [QSA,L]
+  # 后台入口
+  RewriteRule ^admin$ admin.html [L]
+</IfModule>
+
+# 禁止下载敏感文件（数据库 / 日志 / 配置）
+<FilesMatch "\.(db|sqlite|sqlite3|log)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+Options -Indexes
