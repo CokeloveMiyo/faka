@@ -86,7 +86,9 @@ b { font-weight: 600; }
 /* ---------- 主舞台 ---------- */
 .stage {
   display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  gap: clamp(28px, 5vw, 72px); align-items: center;
+  gap: clamp(28px, 5vw, 72px);
+  /* 顶部对齐：商品再多品牌区也不会被推出屏幕，按钮/卡片保持原始大小，超出部分页面自然滚动 */
+  align-items: start;
   max-width: 1120px; margin: 0 auto;
   padding: clamp(28px, 6vh, 72px) clamp(18px, 4vw, 44px) clamp(48px, 8vh, 96px);
   min-height: calc(100svh - 63px);
@@ -117,17 +119,6 @@ b { font-weight: 600; }
   background: var(--card); border: 1px solid var(--line); border-radius: var(--r-card);
   box-shadow: var(--shadow-card);
   padding: clamp(20px, 3vw, 30px);
-}
-/* 桌面双栏：商品多时购买卡不超高（限高 + 列表卡内滚动），保证左侧品牌区始终完整可见 */
-@media (min-width: 901px) {
-  .panel {
-    display: flex; flex-direction: column;
-    max-height: calc(100svh - 63px - clamp(28px, 6vh, 72px) - clamp(48px, 8vh, 96px) - 2px);
-  }
-  .prod-list {
-    flex: 1 1 auto; min-height: 96px; overflow-y: auto; align-content: start;
-    scrollbar-width: thin; padding-right: 4px;
-  }
 }
 .panel__title { font-size: 24px; font-weight: 700; letter-spacing: -.01em; margin: 0; }
 .panel__sub { margin: 4px 0 18px; color: var(--muted); font-size: 14px; }
