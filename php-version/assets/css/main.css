@@ -97,6 +97,16 @@ b { font-weight: 600; }
 
 /* 左：品牌区（整体居中陈列） */
 .brand { text-align: center; }
+/* 桌面双栏：品牌区钉在可视区内垂直居中——内容少时就是普通居中；商品多、页面滚动时它始终停留在屏幕中间 */
+@media (min-width: 901px) {
+  .brand {
+    position: sticky;
+    top: 63px;
+    align-self: start;
+    height: calc(100svh - 63px);
+    display: flex; flex-direction: column; justify-content: center;
+  }
+}
 .brand__mark {
   display: flex; justify-content: center;
   margin: -8px 0 18px;
